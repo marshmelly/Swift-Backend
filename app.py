@@ -15,7 +15,7 @@ def signup():
         phone = request.form['phone']
         
         # Connecting to the database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='marshall21$default')
+        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
         
         # Do Insert Querry
         cursor= connection.cursor
@@ -33,7 +33,7 @@ def signin():
         password = request.form['password']
         
         # Connecting to the database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='marshall21$default')
+        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         sql = 'SELECT FROM users WHERE username =%s AND password =%s'
         data = (username, password)
@@ -52,7 +52,7 @@ def product_listing():
     if request.method == 'GET':
         
         # Connecting to Database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='marshall21$default')
+        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         cursor.execute('SELECT FROM product_listing')
         
@@ -76,7 +76,7 @@ def add_product():
         product_photo.save(photo_path)
         
         # Connecting to the database
-        connection= pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='marshall21$default')
+        connection= pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
         
         cursor= connection.cursor()
         sql = 'INSERT INTO product_listing(product_name, description, product_cost, product_photo) VALUES (%s,%s,%s,%s)'
@@ -90,7 +90,7 @@ def add_product():
 def cart():
     
        # Connecting to Database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='marshall21$default')
+        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         cursor.execute('SELECT FROM product_listing')
         
