@@ -2,10 +2,12 @@ from flask import*
 import pymysql
 import pymysql.cursors
 import os
+from flask_cors import CORS
 
 app = Flask(__name__)
-app.config['UPLOAD FOLDER'] = 'static/images'
+app.config['UPLOAD_FOLDER'] = 'home/mellymarsh/mysite/static/images'
 
+CORS(app)
 @app.route("/api/signup", methods= ['POST'])
 def signup():
     if request.method == 'POST':
@@ -13,31 +15,31 @@ def signup():
         email = request.form['email']
         password = request.form['password']
         phone = request.form['phone']
-        
+
         # Connecting to the database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
-        
+        connection = pymysql.connect(host='mellymarsh.mysql.pythonanywhere-services.com', user='mellymarsh', password='fobbs123', database='mellymarsh$default')
+
         # Do Insert Querry
-        cursor= connection.cursor
+        cursor= connection.cursor()
         cursor.execute("INSERT INTO users(username, email, password, phone) VALUES (%s,%s,%s,%s)", (username, email, password, phone))
-        
+
         # Saving the Data into the Database
         connection.commit()
         return jsonify({"message":"Thanks for Joining😁😁"})
-    
 
-@app.route("/api/signin", methods= ['POST'])    
+
+@app.route("/api/signin", methods= ['POST'])
 def signin():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
-        
+
         # Connecting to the database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
+        connection = pymysql.connect(host='mellymarsh.mysql.pythonanywhere-services.com', user='mellymarsh', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
         sql = 'SELECT FROM users WHERE username =%s AND password =%s'
         data = (username, password)
-        
+
         cursor.execute(sql, data)
         count= cursor.rowcount
         if count == 0:
@@ -45,64 +47,64 @@ def signin():
         else:
             user = cursor.fetchone()
             return jsonify({"message":"Successful Login" ,"user": user})
-        
-        
-@app.route("/api/product_listing", methods= ['GET'])        
+
+
+@app.route("/api/product_listing", methods= ['GET'])
 def product_listing():
     if request.method == 'GET':
-        
+
         # Connecting to Database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
+        connection = pymysql.connect(host='mellymarsh.mysql.pythonanywhere-services.com', user='mellymarsh', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
-        cursor.execute('SELECT FROM product_listing')
-        
+        cursor.execute('SELECT * FROM products')
+
         products = cursor.fetchall()
         connection.close()
         return jsonify({'products': products})
-    
-    
-@app.route("/api/add_product", methods= ['POST']) 
+
+
+@app.route("/api/add_product", methods= ['POST'])
 def add_product():
     if request.method == 'POST':
         product_name = request.form['product_name']
         description = request.form['description']
         product_cost = request.form['product_cost']
-        
+
         # Extract Image from input
         product_photo = request.files['product_photo']
         filename = product_photo.filename
-        
+
         photo_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
         product_photo.save(photo_path)
-        
+
         # Connecting to the database
-        connection= pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
-        
+        connection= pymysql.connect(host='mellymarsh.mysql.pythonanywhere-services.com', user='mellymarsh', password='fobbs123', database='mellymarsh$default')
+
         cursor= connection.cursor()
-        sql = 'INSERT INTO product_listing(product_name, description, product_cost, product_photo) VALUES (%s,%s,%s,%s)'
-        data = (product_name,description,product_cost,filename)        
+        sql = 'INSERT INTO products (product_name, description, product_cost, product_photo) VALUES (%s,%s,%s,%s)'
+        data = (product_name,description,product_cost,filename)
         cursor.execute(sql,data)
-        
+
         connection.commit()
         return jsonify({"message":"Product successfully added😁😁"})
-    
-@app.route("/api/cart", methods= ['GET'])    
+
+@app.route("/api/cart", methods= ['GET'])
 def cart():
-    
+
        # Connecting to Database
-        connection = pymysql.connect(host='marshall21.mysql.pythonanywhere-services.com', user='marshall21', password='fobbs123', database='mellymarsh$default')
+        connection = pymysql.connect(host='mellymarsh.mysql.pythonanywhere-services.com', user='mellymarsh', password='fobbs123', database='mellymarsh$default')
         cursor = connection.cursor(pymysql.cursors.DictCursor)
-        cursor.execute('SELECT FROM product_listing')
-        
+        cursor.execute('SELECT * FROM products')
+
         product = cursor.fetchone()
         connection.close()
         return jsonify({'products': product})
-    
 
 
 
 
-# Mpesa Payment Route 
+
+# Mpesa Payment Route
 import requests
 import datetime
 import base64
@@ -121,7 +123,7 @@ def mpesa_payment():
 
         # Authenticate Yourself using above credentials to Safaricom Services, and Bearer Token this is used by safaricom for security identification purposes - Your are given Access
         api_URL = "https://sandbox.safaricom.co.ke/oauth/v1/generate?grant_type=client_credentials"  # AUTH URL
-        # Provide your consumer_key and consumer_secret 
+        # Provide your consumer_key and consumer_secret
         response = requests.get(api_URL, auth=HTTPBasicAuth(consumer_key, consumer_secret))
         # Get response as Dictionary
         data = response.json()
@@ -161,13 +163,17 @@ def mpesa_payment():
         }
 
         # Specify STK Push  Trigger URL
-        url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"  
-        # Create a POST Request to above url, providing headers, payload 
+        url = "https://sandbox.safaricom.co.ke/mpesa/stkpush/v1/processrequest"
+        # Create a POST Request to above url, providing headers, payload
         # Below triggers an STK Push to the phone number indicated in the payload and the amount.
         response = requests.post(url, json=payload, headers=headers)
-        print(response.text) # 
+        print(response.text) #
         # Give a Response
         return jsonify({"message": "An MPESA Prompt has been sent to Your Phone, Please Check & Complete Payment"})
+
+
+
+
 
 
 
